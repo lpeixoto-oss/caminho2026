@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Santiago → Fisterra · Distâncias por dia</title>
+<style>
+  :root{
+    --stone:#2f2e2a;
+    --parchment:#f4efe3;
+    --parchment-dark:#e8e0cd;
+    --waymark:#d69a1f;
+    --waymark-dark:#a97812;
+    --atlantic:#2c5459;
+    --moss:#5c6b4c;
+    --line: rgba(47,46,42,0.14);
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--parchment);
+    color:var(--stone);
+    font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    line-height:1.45;
+    padding: 32px 16px 64px;
+  }
+
+  .wrap{
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  header{
+    margin-bottom: 36px;
+    border-bottom: 3px solid var(--stone);
+    padding-bottom: 18px;
+  }
+
+  .marker{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--waymark-dark);
+    margin-bottom: 6px;
+  }
+
+  .marker svg{ flex-shrink:0; }
+
+  h1{
+    font-size: clamp(28px, 5vw, 40px);
+    margin: 0 0 6px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  header p{
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    color: #5a584f;
+    margin: 0;
+    max-width: 46ch;
+  }
+
+  .day{
+    display:grid;
+    grid-template-columns: 34px 1fr;
+    gap: 14px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .day:first-of-type{ padding-top: 4px; }
+
+  .daynum{
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 13px;
+    color: var(--parchment);
+    background: var(--stone);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight: 600;
+  }
+
+  .day-body{
+    display:flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 12px;
+  }
+
+  .field{
+    display:flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 180px;
+    min-width: 150px;
+  }
+
+  label{
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 11px;
+    color: #6d6a5e;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  select{
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    padding: 9px 10px;
+    border-radius: 6px;
+    border: 1px solid #c9c0a8;
+    background: #fffdf8;
+    color: var(--stone);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232f2e2a' stroke-width='1.6' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 30px;
+  }
+
+  select:focus-visible{
+    outline: 2px solid var(--atlantic);
+    outline-offset: 1px;
+  }
+
+  .arrow{
+    font-size: 18px;
+    color: #a39b82;
+    padding-top: 16px;
+  }
+
+  .distance{
+    flex: 0 0 auto;
+    text-align: right;
+    padding-top: 16px;
+    min-width: 92px;
+  }
+
+  .distance .km{
+    font-size: 22px;
+    font-variant-numeric: tabular-nums;
+    color: var(--atlantic);
+  }
+
+  .distance .unit{
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 11px;
+    color: #6d6a5e;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display:block;
+  }
+
+  .distance.warn .km{ color: #b3462c; }
+
+  .total-row{
+    margin-top: 26px;
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 18px 20px;
+    background: var(--stone);
+    color: var(--parchment);
+    border-radius: 10px;
+  }
+
+  .total-row .label{
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: #c9c4b2;
+  }
+
+  .total-row .value{
+    font-size: 26px;
+    font-variant-numeric: tabular-nums;
+    color: var(--waymark);
+  }
+
+  footer{
+    margin-top: 28px;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 12.5px;
+    color: #726f61;
+  }
+
+  footer .legend{
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 480px){
+    .day{ grid-template-columns: 26px 1fr; gap: 10px; }
+    .daynum{ width:24px; height:24px; font-size:11px; }
+    .distance{ width:100%; text-align:left; padding-top:2px; }
+    .arrow{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="marker">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M4.5 8.5L7 11l4.5-5.5" stroke="currentColor" stroke-width="1.4" fill="none"/>
+      </svg>
+      CAMINHO DE FISTERRA
+    </div>
+    <h1>Santiago → Fisterra</h1>
+    <p>Escolhe o ponto de partida e o de chegada em cada dia. A distância é calculada automaticamente a partir do percurso oficial.</p>
+  </header>
+
+  <div id="days"></div>
+
+  <div class="total-row">
+    <span class="label">Total dos 5 dias</span>
+    <span class="value" id="total-value">— km</span>
+  </div>
+
+  <footer>
+    <div>Percurso sem passar por Muxía · Olveiroa → Cee/Corcubión → Fisterra.</div>
+    <div class="legend">* posição aproximada (sem km oficial tabelado nas fontes consultadas)</div>
+  </footer>
+
+</div>
+
+<script>
+  // Distância acumulada desde Santiago de Compostela (km).
+  // approx: true = posição estimada, sem valor oficial nas fontes consultadas
+  const POINTS = [
+    { name: "Santiago de Compostela", km: 0.0 },
+    { name: "Alto do Vento", km: 9.0 },
+    { name: "Alto do Mar de Ovellas", km: 14.2 },
+    { name: "Ponte Maceira", km: 17.4 },
+    { name: "Negreira", km: 21.4 },
+    { name: "Zas", km: 24.6 },
+    { name: "A Pena", km: 29.8 },
+    { name: "Vilaserío", km: 34.3 },
+    { name: "O Cornado", km: 36.3 },
+    { name: "As Maroñas", km: 41.2 },
+    { name: "Santa Mariña", km: 42.3 },
+    { name: "Lago", km: 48.2 },
+    { name: "Ponteolveira", km: 52.4 },
+    { name: "Olveiroa", km: 54.7 },
+    { name: "Logoso", km: 58.2 },
+    { name: "Hospital", km: 59.2 },
+    { name: "Bifurcação Fisterra/Muxía", km: 60.2 },
+    { name: "Capela das Neves", km: 64.2 },
+    { name: "Capela de San Pedro Mártir", km: 67.8 },
+    { name: "Cee", km: 73.8 },
+    { name: "Corcubión", km: 75.4 },
+    { name: "Sardiñeiro", km: 80.0 },
+    { name: "A Langosteira", km: 84.0, approx: true },
+    { name: "Fisterra", km: 86.0 },
+    { name: "Igreja de Santa María das Areas", km: 86.3, approx: true },
+    { name: "Praia do Mar de Fóra", km: 87.8, approx: true },
+    { name: "Marco do Km 0", km: 89.3, approx: true },
+    { name: "Farol de Fisterra", km: 89.5 }
+  ];
+
+  const DEFAULT_DAYS = [
+    ["Santiago de Compostela", "Negreira"],
+    ["Negreira", "Olveiroa"],
+    ["Olveiroa", "Corcubión"],
+    ["Corcubión", "Fisterra"],
+    ["Fisterra", "Farol de Fisterra"]
+  ];
+
+  function optionsHTML(selected){
+    return POINTS.map(p =>
+      `<option value="${p.name}" ${p.name === selected ? "selected" : ""}>${p.name}${p.approx ? " *" : ""}</option>`
+    ).join("");
+  }
+
+  function buildDays(){
+    const container = document.getElementById("days");
+    DEFAULT_DAYS.forEach((pair, i) => {
+      const row = document.createElement("div");
+      row.className = "day";
+      row.innerHTML = `
+        <div class="daynum">${i + 1}</div>
+        <div class="day-body">
+          <div class="field">
+            <label>Partida</label>
+            <select class="from" data-day="${i}">${optionsHTML(pair[0])}</select>
+          </div>
+          <span class="arrow">→</span>
+          <div class="field">
+            <label>Chegada</label>
+            <select class="to" data-day="${i}">${optionsHTML(pair[1])}</select>
+          </div>
+          <div class="distance" data-day="${i}">
+            <span class="km">—</span>
+            <span class="unit">km</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  function kmOf(name){
+    const p = POINTS.find(p => p.name === name);
+    return p ? p.km : null;
+  }
+
+  function recalc(){
+    let total = 0;
+    let allValid = true;
+
+    document.querySelectorAll(".from").forEach(fromSel => {
+      const day = fromSel.dataset.day;
+      const toSel = document.querySelector(`.to[data-day="${day}"]`);
+      const distEl = document.querySelector(`.distance[data-day="${day}"]`);
+      const fromKm = kmOf(fromSel.value);
+      const toKm = kmOf(toSel.value);
+      const diff = toKm - fromKm;
+
+      const kmSpan = distEl.querySelector(".km");
+      if (diff < 0){
+        kmSpan.textContent = Math.abs(diff).toFixed(1) + " ↩";
+        distEl.classList.add("warn");
+      } else {
+        kmSpan.textContent = diff.toFixed(1);
+        distEl.classList.remove("warn");
+      }
+      total += Math.abs(diff);
+    });
+
+    document.getElementById("total-value").textContent = total.toFixed(1) + " km";
+  }
+
+  buildDays();
+  document.getElementById("days").addEventListener("change", recalc);
+  recalc();
+</script>
+
+</body>
+</html>
