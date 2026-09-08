@@ -128,6 +128,12 @@
     padding-right: 30px;
   }
 
+  select option.stage{
+    font-weight: 700;
+    color: var(--waymark-dark);
+    background: var(--parchment-dark);
+  }
+
   select:focus-visible{
     outline: 2px solid var(--atlantic);
     outline-offset: 1px;
@@ -233,7 +239,7 @@
 
   <footer>
     <div>Percurso sem passar por Muxía · Olveiroa → Cee/Corcubión → Fisterra.</div>
-    <div class="legend">* posição aproximada (sem km oficial tabelado nas fontes consultadas)</div>
+    <div class="legend">● ponto principal de etapa (fim/início de dia clássico) · * posição aproximada (sem km oficial tabelado nas fontes consultadas)</div>
   </footer>
 
 </div>
@@ -241,12 +247,13 @@
 <script>
   // Distância acumulada desde Santiago de Compostela (km).
   // approx: true = posição estimada, sem valor oficial nas fontes consultadas
+  // stage: true = um dos 6 pontos "pai" da etapa (fim/início de dia clássico)
   const POINTS = [
-    { name: "Santiago de Compostela", km: 0.0 },
+    { name: "Santiago de Compostela", km: 0.0, stage: true },
     { name: "Alto do Vento", km: 9.0 },
     { name: "Alto do Mar de Ovellas", km: 14.2 },
     { name: "Ponte Maceira", km: 17.4 },
-    { name: "Negreira", km: 21.4 },
+    { name: "Negreira", km: 21.4, stage: true },
     { name: "Zas", km: 24.6 },
     { name: "A Pena", km: 29.8 },
     { name: "Vilaserío", km: 34.3 },
@@ -255,21 +262,21 @@
     { name: "Santa Mariña", km: 42.3 },
     { name: "Lago", km: 48.2 },
     { name: "Ponteolveira", km: 52.4 },
-    { name: "Olveiroa", km: 54.7 },
+    { name: "Olveiroa", km: 54.7, stage: true },
     { name: "Logoso", km: 58.2 },
     { name: "Hospital", km: 59.2 },
     { name: "Bifurcação Fisterra/Muxía", km: 60.2 },
     { name: "Capela das Neves", km: 64.2 },
     { name: "Capela de San Pedro Mártir", km: 67.8 },
     { name: "Cee", km: 73.8 },
-    { name: "Corcubión", km: 75.4 },
+    { name: "Corcubión", km: 75.4, stage: true },
     { name: "Sardiñeiro", km: 80.0 },
     { name: "A Langosteira", km: 84.0, approx: true },
-    { name: "Fisterra", km: 86.0 },
+    { name: "Fisterra", km: 86.0, stage: true },
     { name: "Igreja de Santa María das Areas", km: 86.3, approx: true },
     { name: "Praia do Mar de Fóra", km: 87.8, approx: true },
     { name: "Marco do Km 0", km: 89.3, approx: true },
-    { name: "Farol de Fisterra", km: 89.5 }
+    { name: "Farol de Fisterra", km: 89.5, stage: true }
   ];
 
   const DEFAULT_DAYS = [
@@ -281,9 +288,12 @@
   ];
 
   function optionsHTML(selected){
-    return POINTS.map(p =>
-      `<option value="${p.name}" ${p.name === selected ? "selected" : ""}>${p.name}${p.approx ? " *" : ""}</option>`
-    ).join("");
+    return POINTS.map(p => {
+      const label = (p.stage ? "● " : "") + p.name + (p.approx ? " *" : "");
+      const cls = p.stage ? ' class="stage"' : "";
+      const sel = p.name === selected ? " selected" : "";
+      return `<option value="${p.name}"${cls}${sel}>${label}</option>`;
+    }).join("");
   }
 
   function buildDays(){
